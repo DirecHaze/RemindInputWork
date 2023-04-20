@@ -96,9 +96,6 @@ namespace Game.Scripts.LiveObjects
         {
             if (_inFlightMode)
             {
-                CalculateTilt();
-                CalculateMovementUpdate();
-                _input.Drone.Enable();
                 _inFlightMode = false;
                 onExitFlightmode?.Invoke();
                 ExitFlightMode();
