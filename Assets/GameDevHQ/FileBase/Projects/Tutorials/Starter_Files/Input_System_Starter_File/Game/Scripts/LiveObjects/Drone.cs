@@ -7,6 +7,7 @@ using Game.Scripts.UI;
 using UnityEngine.InputSystem;
 
 
+
 namespace Game.Scripts.LiveObjects
 {
     public class Drone : MonoBehaviour
@@ -28,7 +29,9 @@ namespace Game.Scripts.LiveObjects
         [SerializeField]
         private InteractableZone _interactableZone;
         private PlayerControl _input;
-        
+        [SerializeField]
+        private Player _player;
+         
 
         public static event Action OnEnterFlightMode;
         public static event Action onExitFlightmode;
@@ -40,8 +43,12 @@ namespace Game.Scripts.LiveObjects
         void Start()
         {
             _input = new PlayerControl();
-           
+            _input.Drone.Esc.performed += Esc_performed;
+
+            
         }
+
+       
 
         private void EnterFlightMode(InteractableZone zone)
         {
@@ -53,7 +60,7 @@ namespace Game.Scripts.LiveObjects
                 OnEnterFlightMode?.Invoke();
                 UIManager.Instance.DroneView(true);
                 _interactableZone.CompleteTask(4);
-                _input.Player.Disable();
+               
             }
         }
 
@@ -62,7 +69,9 @@ namespace Game.Scripts.LiveObjects
             _droneCam.Priority = 9;
             _inFlightMode = false;
             UIManager.Instance.DroneView(false);
-            _input.Player.Enable();
+            _player.enabled = true;
+
+
         }
 
         private void Update()
@@ -72,14 +81,29 @@ namespace Game.Scripts.LiveObjects
                 CalculateTilt();
                 CalculateMovementUpdate();
                 _input.Drone.Enable();
-               
-                if (Input.GetKeyDown(KeyCode.Escape))
-                {
-                    _inFlightMode = false;
-                    onExitFlightmode?.Invoke();
-                    ExitFlightMode();
-                }
+                _player.enabled = false;
             }
+
+            //    if (Input.GetKeyDown(KeyCode.Escape))
+            //    {
+            //       _inFlightMode = false;
+            //       onExitFlightmode?.Invoke();
+            //      ExitFlightMode();
+            //  }
+            //   }
+        }
+        private void Esc_performed(InputAction.CallbackContext obj)
+        {
+            if (_inFlightMode)
+            {
+                CalculateTilt();
+                CalculateMovementUpdate();
+                _input.Drone.Enable();
+                _inFlightMode = false;
+                onExitFlightmode?.Invoke();
+                ExitFlightMode();
+            }
+            
         }
 
         private void FixedUpdate()

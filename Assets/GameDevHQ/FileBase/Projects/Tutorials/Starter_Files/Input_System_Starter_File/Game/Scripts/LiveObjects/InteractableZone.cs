@@ -82,7 +82,8 @@ namespace Game.Scripts.LiveObjects
         private void OnEnable()
         {
             InteractableZone.onZoneInteractionComplete += SetMarker;
-
+          
+           
         }
 
         private void OnTriggerEnter(Collider other)
