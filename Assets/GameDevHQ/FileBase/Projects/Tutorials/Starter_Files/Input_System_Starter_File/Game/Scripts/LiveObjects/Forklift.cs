@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Cinemachine;
+using UnityEngine.InputSystem;
 
 namespace Game.Scripts.LiveObjects
 {
@@ -19,6 +20,12 @@ namespace Game.Scripts.LiveObjects
         private bool _inDriveMode = false;
         [SerializeField]
         private InteractableZone _interactableZone;
+        private PlayerControl _input;
+        [SerializeField]
+        private Player _player;
+        private bool _liftRoutineUp = false;
+        private bool _liftRoutineDown = false;
+        
 
         public static event Action onDriveModeEntered;
         public static event Action onDriveModeExited;
@@ -27,6 +34,18 @@ namespace Game.Scripts.LiveObjects
         {
             InteractableZone.onZoneInteractionComplete += EnterDriveMode;
         }
+        void Start()
+        {
+            _input = new PlayerControl();
+            _input.ForkLift.LiftControlUp.performed += LiftControlUp_performed;
+            _input.ForkLift.LiftControlDown.performed += LiftControlDown_performed;
+            _input.ForkLift.LiftControlUp.canceled += LiftControlUp_canceled;
+            _input.ForkLift.LiftControlDown.canceled += LiftControlDown_canceled;
+            _input.ForkLift.Esc.performed += Esc_performed;
+
+        }
+
+      
 
         private void EnterDriveMode(InteractableZone zone)
         {
@@ -34,18 +53,23 @@ namespace Game.Scripts.LiveObjects
             {
                 _inDriveMode = true;
                 _forkliftCam.Priority = 11;
-                onDriveModeEntered?.Invoke();
                 _driverModel.SetActive(true);
+                onDriveModeEntered?.Invoke();
                 _interactableZone.CompleteTask(5);
+                _input.ForkLift.Enable();
+                _player.enabled = false;
+
             }
         }
 
         private void ExitDriveMode()
         {
-            _inDriveMode = false;
-            _forkliftCam.Priority = 9;            
+            _forkliftCam.Priority = 8;            
             _driverModel.SetActive(false);
             onDriveModeExited?.Invoke();
+            _input.ForkLift.Disable();
+            _player.enabled = true;
+
             
         }
 
@@ -53,18 +77,38 @@ namespace Game.Scripts.LiveObjects
         {
             if (_inDriveMode == true)
             {
-                LiftControls();
+                //LiftControls();
                 CalcutateMovement();
-                if (Input.GetKeyDown(KeyCode.Escape))
-                    ExitDriveMode();
+               // if (Input.GetKeyDown(KeyCode.Escape))
+                 //   ExitDriveMode();
             }
+            if(_liftRoutineUp == true)
+            {
+                LiftUpRoutine();
+            }
+            if(_liftRoutineDown == true)
+            {
+                LiftDownRoutine();
+            }
+            if(_inDriveMode == false)
+            {
+                ExitDriveMode();
+            }
+
+        }
+        private void Esc_performed(InputAction.CallbackContext obj)
+        {
+            _inDriveMode = false;
 
         }
 
         private void CalcutateMovement()
         {
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
+            // float h = Input.GetAxisRaw("Horizontal");
+            // float v = Input.GetAxisRaw("Vertical");
+            var h = _input.ForkLift.Roate.ReadValue<float>();
+            var v = _input.ForkLift.Movement.ReadValue<float>();
+            
             var direction = new Vector3(0, 0, v);
             var velocity = direction * _speed;
 
@@ -78,12 +122,29 @@ namespace Game.Scripts.LiveObjects
             }
         }
 
-        private void LiftControls()
+       // private void LiftControls()
+        //{
+          //  if (Input.GetKey(KeyCode.R))
+            //    LiftUpRoutine();
+            //else if (Input.GetKey(KeyCode.T))
+              //  LiftDownRoutine();
+       // }
+        private void LiftControlUp_performed(InputAction.CallbackContext obj)
         {
-            if (Input.GetKey(KeyCode.R))
-                LiftUpRoutine();
-            else if (Input.GetKey(KeyCode.T))
-                LiftDownRoutine();
+            _liftRoutineUp = true;
+        }
+        private void LiftControlUp_canceled(InputAction.CallbackContext obj)
+        {
+            _liftRoutineUp = false;
+        }
+
+        private void LiftControlDown_performed(InputAction.CallbackContext obj)
+        {
+            _liftRoutineDown = true;
+        }
+        private void LiftControlDown_canceled(InputAction.CallbackContext obj)
+        {
+            _liftRoutineDown = false;
         }
 
         private void LiftUpRoutine()
