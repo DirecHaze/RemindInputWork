@@ -471,6 +471,34 @@ public partial class @PlayerControl : IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Crate"",
+            ""id"": ""ef2f1c8a-ca3f-4d7b-bc93-cb81409bfa5e"",
+            ""actions"": [
+                {
+                    ""name"": ""Tap"",
+                    ""type"": ""Button"",
+                    ""id"": ""87b7eae7-2979-4337-958e-d3046398ac95"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""df5fc3b5-4b9b-40fc-b1d6-c21c6e5a9941"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": ""Tap"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Tap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -494,6 +522,9 @@ public partial class @PlayerControl : IInputActionCollection2, IDisposable
         m_ForkLift_LiftControlUp = m_ForkLift.FindAction("LiftControlUp", throwIfNotFound: true);
         m_ForkLift_LiftControlDown = m_ForkLift.FindAction("LiftControlDown", throwIfNotFound: true);
         m_ForkLift_Esc = m_ForkLift.FindAction("Esc", throwIfNotFound: true);
+        // Crate
+        m_Crate = asset.FindActionMap("Crate", throwIfNotFound: true);
+        m_Crate_Tap = m_Crate.FindAction("Tap", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -728,6 +759,39 @@ public partial class @PlayerControl : IInputActionCollection2, IDisposable
         }
     }
     public ForkLiftActions @ForkLift => new ForkLiftActions(this);
+
+    // Crate
+    private readonly InputActionMap m_Crate;
+    private ICrateActions m_CrateActionsCallbackInterface;
+    private readonly InputAction m_Crate_Tap;
+    public struct CrateActions
+    {
+        private @PlayerControl m_Wrapper;
+        public CrateActions(@PlayerControl wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Tap => m_Wrapper.m_Crate_Tap;
+        public InputActionMap Get() { return m_Wrapper.m_Crate; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(CrateActions set) { return set.Get(); }
+        public void SetCallbacks(ICrateActions instance)
+        {
+            if (m_Wrapper.m_CrateActionsCallbackInterface != null)
+            {
+                @Tap.started -= m_Wrapper.m_CrateActionsCallbackInterface.OnTap;
+                @Tap.performed -= m_Wrapper.m_CrateActionsCallbackInterface.OnTap;
+                @Tap.canceled -= m_Wrapper.m_CrateActionsCallbackInterface.OnTap;
+            }
+            m_Wrapper.m_CrateActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @Tap.started += instance.OnTap;
+                @Tap.performed += instance.OnTap;
+                @Tap.canceled += instance.OnTap;
+            }
+        }
+    }
+    public CrateActions @Crate => new CrateActions(this);
     public interface IPlayerActions
     {
         void OnWalk(InputAction.CallbackContext context);
@@ -749,5 +813,9 @@ public partial class @PlayerControl : IInputActionCollection2, IDisposable
         void OnLiftControlUp(InputAction.CallbackContext context);
         void OnLiftControlDown(InputAction.CallbackContext context);
         void OnEsc(InputAction.CallbackContext context);
+    }
+    public interface ICrateActions
+    {
+        void OnTap(InputAction.CallbackContext context);
     }
 }

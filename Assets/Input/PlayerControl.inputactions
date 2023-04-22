@@ -449,6 +449,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Crate",
+            "id": "ef2f1c8a-ca3f-4d7b-bc93-cb81409bfa5e",
+            "actions": [
+                {
+                    "name": "Tap",
+                    "type": "Button",
+                    "id": "87b7eae7-2979-4337-958e-d3046398ac95",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "df5fc3b5-4b9b-40fc-b1d6-c21c6e5a9941",
+                    "path": "<Keyboard>/e",
+                    "interactions": "Tap",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Tap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []
